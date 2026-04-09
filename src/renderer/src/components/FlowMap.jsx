@@ -48,7 +48,13 @@ const VISIBLE_W = 320
 const INITIAL_PAN = { x: -(CANVAS_W - VISIBLE_W) / 2, y: 0 }
 
 // ── FlowMap ───────────────────────────────────────────────────────────────────
-function FlowMap({ onClose }) {
+function fmt(secs) {
+  const m = Math.floor(secs / 60).toString().padStart(2, '0')
+  const s = (secs % 60).toString().padStart(2, '0')
+  return `${m}:${s}`
+}
+
+function FlowMap({ onClose, timer, mode }) {
   const [blocks,   setBlocks]   = useState(INITIAL_BLOCKS)
   const [nodes,    setNodes]     = useState(INITIAL_NODES)
   const [segments, setSegments] = useState(INITIAL_SEGMENTS)
@@ -207,6 +213,8 @@ function FlowMap({ onClose }) {
                 isPast={isPast}
                 flipped={nodes[i].y < 150}
                 onEdit={() => setEditingId(block.id)}
+                timeLeft={i === activeIndex ? timer?.timeLeft : null}
+                isRunning={i === activeIndex ? timer?.isRunning : null}
               />
             )
           })}
@@ -235,7 +243,7 @@ function FlowMap({ onClose }) {
 }
 
 // ── Node ──────────────────────────────────────────────────────────────────────
-function Node({ block, x, y, num, isPast, flipped, onEdit }) {
+function Node({ block, x, y, num, isPast, flipped, onEdit, timeLeft, isRunning }) {
   const [hovered, setHovered] = useState(false)
   const leaveTimer = useRef(null)
 
@@ -284,8 +292,32 @@ function Node({ block, x, y, num, isPast, flipped, onEdit }) {
       // Stop propagation so clicking a node doesn't start canvas panning
       onPointerDown={e => e.stopPropagation()}
     >
-      {/* Pulse ring — active node only */}
-      {isActive && (
+      {/* Floating timer badge — active node only */}
+      {isActive && timeLeft !== null && (
+        <div
+          className="absolute z-30 flex items-center gap-1 whitespace-nowrap"
+          style={{
+            bottom: half + 8,
+            left: '50%',
+            transform: 'translateX(-50%)',
+          }}
+        >
+          {isRunning ? (
+            <span
+              className={`w-[6px] h-[6px] rounded-full ${isBreak ? 'bg-break-accent' : 'bg-tertiary'}`}
+              style={{ boxShadow: isBreak ? '0 0 5px rgba(241,154,142,0.8)' : '0 0 5px rgba(107,253,175,0.8)' }}
+            />
+          ) : (
+            <span className={`text-[8px] font-bold tracking-tight ${isBreak ? 'text-break-accent' : 'text-tertiary'}`}>||</span>
+          )}
+          <span className={`text-[10px] font-bold tabular-nums ${isBreak ? 'text-break-accent' : 'text-tertiary'}`}>
+            {fmt(timeLeft)}
+          </span>
+        </div>
+      )}
+
+      {/* Pulse ring — active node only, stops when paused */}
+      {isActive && isRunning && (
         <div
           className={`absolute rounded-full z-10 ${isBreak ? 'node-pulse-break' : 'node-pulse-focus'}`}
           style={{ width: size, height: size, marginLeft: -half, marginTop: -half }}

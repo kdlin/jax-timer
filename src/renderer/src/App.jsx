@@ -48,7 +48,7 @@ function App() {
         triggerBadgeAnim={triggerBadgeAnim}
       />
         {/* FlowMap overlays on top when open */}
-        {view === 'map' && <FlowMap onClose={() => setView('timer')} />}
+        {view === 'map' && <FlowMap onClose={() => setView('timer')} timer={timer} mode={mode} />}
       </div>
     </div>
   )
