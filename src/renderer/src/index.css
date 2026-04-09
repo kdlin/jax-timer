@@ -58,3 +58,20 @@ body {
 .badge-break-ripple::before {
   background: rgba(241, 154, 142, 0.3);
 }
+
+/* Node pulse ring — loops on active node in FlowMap */
+@keyframes node-pulse {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  70%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+.node-pulse-focus {
+  animation: node-pulse 2s ease-out infinite;
+  background: rgba(107, 253, 175, 0.35);
+}
+
+.node-pulse-break {
+  animation: node-pulse 2s ease-out infinite;
+  background: rgba(241, 154, 142, 0.35);
+}

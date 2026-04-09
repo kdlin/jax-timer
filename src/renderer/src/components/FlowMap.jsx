@@ -1,5 +1,5 @@
 // FlowMap.jsx — pannable overlay popup
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef } from 'react'
 
 // ── Canvas dimensions (inner pannable area) ───────────────────────────────────
 const CANVAS_W = 600
@@ -7,15 +7,15 @@ const CANVAS_H = 700
 
 // Node positions in pixels within the canvas
 const NODES = [
-  { x: 300, y: 80  },  // Block 1 — center top
-  { x: 130, y: 200 },  // Break 1 — left middle
-  { x: 300, y: 320 },  // Block 2 — center lower
+  { x: 300, y: 80  },  // Block 1 — center
+  { x: 190, y: 200 },  // Break 1 — left (tighter S-curve, stays visible)
+  { x: 300, y: 320 },  // Block 2 — center
 ]
 
-// Bezier path segments connecting each pair of nodes
+// Bezier path segments
 const SEGMENTS = [
-  `M ${NODES[0].x},${NODES[0].y} C 500,120 100,160 ${NODES[1].x},${NODES[1].y}`,
-  `M ${NODES[1].x},${NODES[1].y} C 100,260 500,290 ${NODES[2].x},${NODES[2].y}`,
+  `M ${NODES[0].x},${NODES[0].y} C 380,120 200,160 ${NODES[1].x},${NODES[1].y}`,
+  `M ${NODES[1].x},${NODES[1].y} C 160,260 360,290 ${NODES[2].x},${NODES[2].y}`,
 ]
 
 const BLOCKS = [
@@ -34,13 +34,14 @@ const INITIAL_PAN = { x: -(CANVAS_W - VISIBLE_W) / 2, y: 0 }
 function FlowMap({ onClose }) {
   const activeIndex = BLOCKS.findIndex(b => b.status === 'active')
   const [pan, setPan] = useState(INITIAL_PAN)
-  const [scale, setScale] = useState(1)
   const dragRef = useRef(null)
 
   function onWheel(e) {
     e.preventDefault()
-    const delta = e.deltaY > 0 ? -0.03 : 0.03
-    setScale(s => Math.min(2, Math.max(0.4, s + delta)))
+    setPan(prev => ({
+      x: prev.x,
+      y: Math.min(0, Math.max(VISIBLE_H - CANVAS_H, prev.y - e.deltaY * 0.5)),
+    }))
   }
 
   function onPointerDown(e) {
@@ -98,8 +99,7 @@ function FlowMap({ onClose }) {
           style={{
             width: CANVAS_W,
             height: CANVAS_H,
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
-            transformOrigin: 'center center',
+            transform: `translate(${pan.x}px, ${pan.y}px)`,
             willChange: 'transform',
           }}
         >
@@ -147,6 +147,7 @@ function FlowMap({ onClose }) {
                 y={NODES[i].y}
                 num={num}
                 isPast={isPast}
+                flipped={NODES[i].y < 150}
               />
             )
           })}
@@ -158,36 +159,61 @@ function FlowMap({ onClose }) {
 }
 
 // ── Node ──────────────────────────────────────────────────────────────────────
-function Node({ block, x, y, num, isPast }) {
-  const isActive  = block.status === 'active'
-  const isBreak   = block.type === 'break'
+function Node({ block, x, y, num, isPast, flipped }) {
+  const [hovered, setHovered] = useState(false)
+  const isActive = block.status === 'active'
+  const isBreak  = block.type === 'break'
 
   const size = isActive ? 32 : 24
   const half = size / 2
 
+  const accentText  = isBreak ? 'text-break-accent' : 'text-tertiary'
+  const accentBorder = isBreak ? 'border-break-accent/40' : 'border-tertiary/40'
+  const accentGlow  = isBreak ? '0 0 14px rgba(241,154,142,0.5)' : '0 0 14px rgba(107,253,175,0.5)'
+
   const circleCls = isActive
-    ? 'bg-primary shadow-[0_0_15px_rgba(255,255,255,0.4)]'
+    ? 'bg-primary'
     : isPast
-      ? 'bg-surface-container-high border border-tertiary/40'
+      ? `bg-surface-container-high border ${accentBorder}`
       : 'bg-surface-container-low border border-outline-variant/20'
 
   const iconCls = isActive
     ? 'text-on-primary text-base'
     : isPast
-      ? 'text-tertiary text-xs'
+      ? `${accentText} text-xs`
       : 'text-on-surface-variant/30 text-xs'
 
-  const labelCls = isActive
-    ? 'text-primary'
-    : isPast
-      ? 'text-tertiary/60'
-      : 'text-on-surface-variant/20'
+  const labelCls = isActive ? 'text-primary'
+    : isPast ? `${accentText} opacity-60`
+    : 'text-on-surface-variant/20'
 
   return (
-    <div className="absolute" style={{ left: x, top: y }}>
+    <div
+      className="absolute"
+      style={{ left: x, top: y }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Pulse ring — active node only */}
+      {isActive && (
+        <div
+          className={`absolute rounded-full z-10 ${isBreak ? 'node-pulse-break' : 'node-pulse-focus'}`}
+          style={{ width: size, height: size, marginLeft: -half, marginTop: -half }}
+        />
+      )}
+
+      {/* Node circle */}
       <div
-        className={`absolute flex items-center justify-center rounded-full z-20 transition-all ${circleCls}`}
-        style={{ width: size, height: size, marginLeft: -half, marginTop: -half }}
+        className={`absolute flex items-center justify-center rounded-full z-20 transition-all duration-200 ${circleCls}`}
+        style={{
+          width: size,
+          height: size,
+          marginLeft: -half,
+          marginTop: -half,
+          boxShadow: isActive
+            ? '0 0 15px rgba(255,255,255,0.4)'
+            : hovered ? accentGlow : 'none',
+        }}
       >
         <span
           className={`material-symbols-outlined ${iconCls}`}
@@ -196,12 +222,73 @@ function Node({ block, x, y, num, isPast }) {
           {isBreak ? 'coffee' : 'timer'}
         </span>
       </div>
+
+      {/* Static label (always visible, small) */}
       <p
-        className={`absolute whitespace-nowrap text-[9px] font-bold uppercase ${labelCls}`}
+        className={`absolute whitespace-nowrap text-[9px] font-bold uppercase transition-all duration-200 ${labelCls}`}
         style={{ left: half + 8, transform: 'translateY(-50%)' }}
       >
         {isBreak ? 'Break' : 'Block'} {num}
       </p>
+
+      {/* Hover card — expands up or down from node like a Maps pin */}
+      <div
+        className={`absolute z-30 pointer-events-none transition-all duration-200 ${flipped ? 'origin-top' : 'origin-bottom'}`}
+        style={{
+          left: half + 6,
+          ...(flipped
+            ? { top: half + 6 }
+            : { bottom: half + 6 }
+          ),
+          transform: hovered
+            ? 'scale(1) translateY(0)'
+            : flipped ? 'scale(0.7) translateY(-6px)' : 'scale(0.7) translateY(6px)',
+          opacity: hovered ? 1 : 0,
+        }}
+      >
+        {/* When flipped: arrow renders ABOVE the card */}
+        {flipped && (
+          <div
+            className={`w-2 h-2 rotate-45 border-t border-l ml-3
+              ${isBreak ? 'border-break-accent/30' : 'border-tertiary/30'}
+              bg-surface-container-high/90
+            `}
+            style={{ marginBottom: -4 }}
+          />
+        )}
+
+        <div
+          className={`
+            px-2.5 py-1.5 rounded-lg border text-left
+            bg-surface-container-high/90 backdrop-blur-sm
+            ${isBreak ? 'border-break-accent/30' : 'border-tertiary/30'}
+          `}
+          style={{
+            boxShadow: isBreak
+              ? '0 4px 20px rgba(241,154,142,0.15)'
+              : '0 4px 20px rgba(107,253,175,0.15)',
+          }}
+        >
+          <p className={`text-[10px] font-black uppercase tracking-widest ${isBreak ? 'text-break-accent' : 'text-tertiary'}`}>
+            {isBreak ? 'Break' : 'Focus'}
+          </p>
+          <p className="text-[11px] font-bold text-primary leading-tight mt-0.5">
+            {isBreak ? 'Break' : 'Block'} {num}
+          </p>
+        </div>
+
+        {/* When NOT flipped: arrow renders BELOW the card */}
+        {!flipped && (
+          <div
+            className={`w-2 h-2 rotate-45 border-b border-r ml-3
+              ${isBreak ? 'border-break-accent/30' : 'border-tertiary/30'}
+              bg-surface-container-high/90
+            `}
+            style={{ marginTop: -4 }}
+          />
+        )}
+      </div>
+
     </div>
   )
 }
