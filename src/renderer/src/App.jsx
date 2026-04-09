@@ -4,6 +4,7 @@ import { useTimer } from './hooks/useTimer'
 
 function App() {
   const [mode, setMode] = useState('focus') // 'focus' | 'break'
+  const [rippleKey, setRippleKey] = useState(0)
   const focusDuration = 25 * 60  // 1500 seconds
   const breakDuration = 5 * 60   // 300 seconds
 
@@ -15,10 +16,15 @@ function App() {
     setMode(next)
     // Timer will auto-reset via the duration useEffect in useTimer
     // then we start it again
-    setTimeout(() => timer.start(), 100)
+    setTimeout(() => { timer.start(); triggerBadgeAnim() }, 100)
   }
 
   const timer = useTimer(duration, handleComplete)
+
+  // Increment key to remount badge element → restarts animation from scratch
+  function triggerBadgeAnim() {
+    setRippleKey(k => k + 1)
+  }
 
   // Format seconds → MM:SS string
   function fmt(secs) {
@@ -30,8 +36,16 @@ function App() {
   return (
     <div className="flex flex-col items-center justify-center w-full h-screen bg-surface gap-4">
 
-      {/* Mode badge */}
-      <span className={`px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase border border-outline-variant/20 bg-surface-container-highest ${mode === 'focus' ? 'text-tertiary' : 'text-break-accent'}`}>
+      {/* Mode badge — ripples once on play/resume */}
+      <span
+        key={rippleKey}
+        className={`
+          px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase
+          border border-outline-variant/20 bg-surface-container-highest
+          ${mode === 'focus' ? 'text-tertiary' : 'text-break-accent'}
+          ${rippleKey > 0 ? `badge-ripple ${mode === 'focus' ? 'badge-focus-ripple' : 'badge-break-ripple'}` : ''}
+        `}
+      >
         {mode}
       </span>
 
@@ -50,7 +64,14 @@ function App() {
         </button>
 
         <button
-          onClick={timer.isRunning ? timer.pause : timer.start}
+          onClick={() => {
+            if (timer.isRunning) {
+              timer.pause()
+            } else {
+              timer.start()
+              triggerBadgeAnim()
+            }
+          }}
           className="w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
         >
           <span className="material-symbols-outlined text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -67,9 +88,11 @@ function App() {
         </button>
       </div>
 
-      <p className="text-[10px] text-on-surface-variant tracking-widest uppercase">
-        {timer.isRunning ? 'running' : 'paused'}
-      </p>
+      {!timer.isRunning && timer.timeLeft < duration && (
+        <p className="text-[10px] text-on-surface-variant tracking-widest uppercase">
+          paused
+        </p>
+      )}
 
     </div>
   )

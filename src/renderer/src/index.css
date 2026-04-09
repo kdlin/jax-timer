@@ -29,3 +29,32 @@ body {
 .no-drag {
   -webkit-app-region: no-drag;
 }
+
+/* Badge ripple ring — expands outward once and fades to nothing */
+@keyframes badge-ripple {
+  0%   { transform: scale(1);   opacity: 0.55; }
+  100% { transform: scale(2.6); opacity: 0; }
+}
+
+.badge-ripple {
+  position: relative;
+}
+
+.badge-ripple::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* forwards = stays at opacity 0 after finishing, no snap back */
+  animation: badge-ripple 1.4s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+}
+
+/* Focus ripple — green glow ring */
+.badge-focus-ripple::before {
+  background: rgba(107, 253, 175, 0.3);
+}
+
+/* Break ripple — salmon glow ring */
+.badge-break-ripple::before {
+  background: rgba(241, 154, 142, 0.3);
+}
