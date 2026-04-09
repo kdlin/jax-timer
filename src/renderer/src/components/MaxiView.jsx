@@ -1,7 +1,7 @@
 // MaxiView.jsx — full 320x380 HUD (focus + break states)
 // Props: mode, timer, duration, onModeSwitch, onSettingsOpen, rippleKey, triggerBadgeAnim
 
-function MaxiView({ mode, timer, duration, onModeSwitch, onSettingsOpen, rippleKey, triggerBadgeAnim }) {
+function MaxiView({ mode, timer, duration, onModeSwitch, onSettingsOpen, onNavigate, rippleKey, triggerBadgeAnim }) {
 
   const isFocus = mode === 'focus'
 
@@ -92,8 +92,12 @@ function MaxiView({ mode, timer, duration, onModeSwitch, onSettingsOpen, rippleK
             </span>
           </button>
 
-          {/* Placeholder for future log icon — same size as reset to keep layout balanced */}
-          <div className="w-6 h-6" />
+          <button
+            onClick={() => onNavigate('map')}
+            className="text-on-surface-variant hover:text-white transition-colors active:scale-95"
+          >
+            <span className="material-symbols-outlined text-[20px]">polyline</span>
+          </button>
         </div>
 
         {/* Paused label */}
