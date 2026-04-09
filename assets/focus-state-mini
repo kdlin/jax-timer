@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Focus Mini HUD</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary": "#1a1c1c",
+                    "outline-variant": "#474747",
+                    "surface-bright": "#393939",
+                    "on-primary-fixed-variant": "#e2e2e2",
+                    "secondary-fixed": "#c8c6c5",
+                    "on-secondary-fixed-variant": "#3c3b3b",
+                    "tertiary-fixed": "#006d41",
+                    "surface-tint": "#c6c6c7",
+                    "surface-dim": "#131313",
+                    "on-primary-container": "#000000",
+                    "primary-fixed-dim": "#454747",
+                    "on-secondary-container": "#e5e2e1",
+                    "surface-container": "#1f1f1f",
+                    "secondary-fixed-dim": "#adabaa",
+                    "surface-container-low": "#1b1b1b",
+                    "surface-container-highest": "#353535",
+                    "secondary-container": "#474746",
+                    "surface-container-lowest": "#0e0e0e",
+                    "inverse-on-surface": "#303030",
+                    "tertiary-container": "#00a666",
+                    "on-secondary": "#1c1b1b",
+                    "surface-container-high": "#2a2a2a",
+                    "on-error": "#690005",
+                    "on-tertiary": "#002110",
+                    "tertiary": "#6bfdaf",
+                    "background": "#131313",
+                    "inverse-primary": "#5d5f5f",
+                    "on-surface-variant": "#c6c6c6",
+                    "on-surface": "#e2e2e2",
+                    "error": "#ffb4ab",
+                    "primary": "#ffffff",
+                    "primary-container": "#d4d4d4",
+                    "inverse-surface": "#e2e2e2",
+                    "primary-fixed": "#5d5f5f",
+                    "on-secondary-fixed": "#1c1b1b",
+                    "secondary": "#c8c6c5",
+                    "outline": "#919191",
+                    "on-tertiary-container": "#000000",
+                    "surface-variant": "#353535",
+                    "on-primary-fixed": "#ffffff",
+                    "on-error-container": "#ffdad6",
+                    "surface": "#131313",
+                    "error-container": "#93000a",
+                    "on-tertiary-fixed-variant": "#6bfdaf",
+                    "on-background": "#e2e2e2",
+                    "tertiary-fixed-dim": "#005230",
+                    "on-tertiary-fixed": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Inter"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: transparent;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .glass-panel {
+            background: rgba(27, 27, 27, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4 text-on-surface">
+<!-- Collapsed Focus Timer Widget (Obsidian HUD Style) -->
+<div class="relative group">
+<!-- Ambient Glow Shadow -->
+<div class="absolute -inset-1 bg-gradient-to-r from-tertiary/20 to-primary/10 rounded-2xl blur-2xl opacity-50 group-hover:opacity-75 transition duration-500"></div>
+<!-- Main Container -->
+<div class="relative glass-panel border border-outline-variant/20 rounded-2xl p-4 w-48 shadow-[0_40px_60px_rgba(198,198,199,0.06)] flex flex-col items-center justify-center space-y-2 cursor-pointer transition-transform duration-200 active:scale-95">
+<!-- Resend-style Badge -->
+<div class="flex items-center space-x-1.5 px-2.5 py-0.5 bg-surface-container-highest border border-outline-variant/20 rounded-full">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary animate-pulse"></span>
+<span class="text-[10px] font-bold tracking-[0.05em] uppercase text-tertiary">Focusing</span>
+</div>
+<!-- Compact Timer Text -->
+<div class="flex flex-col items-center">
+<h1 class="text-4xl font-extrabold tracking-tighter text-primary leading-none">
+                    24:52
+                </h1>
+<!-- Tiny progress indicator bar -->
+<div class="mt-3 w-32 h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 rounded-full"></div>
+</div>
+</div>
+<!-- Context Action Overlay (Appears on Hover) -->
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-low/40 rounded-2xl backdrop-blur-sm">
+<span class="material-symbols-outlined text-primary text-3xl" data-icon="open_in_full">open_in_full</span>
+</div>
+</div>
+</div>
+<!-- Background Decorative Element for Context -->
+<div class="fixed inset-0 -z-10 bg-surface overflow-hidden">
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-surface-container-low/50"></div>
+<!-- This represents a blurred work environment in the background -->
+<img class="absolute inset-0 w-full h-full object-cover opacity-10 mix-blend-overlay grayscale" data-alt="Modern minimalist home office desk with a clean dark aesthetic, laptop and soft ambient lighting in a professional workspace" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGVUY9TPMMrr4BpogFGWBrj08eKXbEf22g4I5Bc5W1Iahrdhzb8_pnEL0CNpm1kVffjfM4Y1hLb-9NQYwS47hz3slR55fURwakH9_8n_3IBcmiH7gYtr5WbcQvMT6tdVloT3myJsYMBXh7ebeGDYsduHqgJumSVXk4AYRtNtdXYP_9Up8RSFHl3wVK8f_R3mR2y5ej2UDhpsN46daZjPqnpKrJWjD-F_zRbd8FJIodGwxSepAas5_qKGhLc8v88fxLW6zT9pMTn0A"/>
+</div>
+</body></html>

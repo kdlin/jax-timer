@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FOCUS - Obsidian Pomodoro</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#c8c6c5",
+                        "on-secondary": "#1c1b1b",
+                        "secondary-container": "#474746",
+                        "inverse-on-surface": "#303030",
+                        "surface-container-high": "#2a2a2a",
+                        "on-error": "#690005",
+                        "tertiary-fixed-dim": "#005230",
+                        "tertiary": "#6bfdaf",
+                        "on-secondary-fixed-variant": "#3c3b3b",
+                        "secondary": "#c8c6c5",
+                        "surface-tint": "#c6c6c7",
+                        "tertiary-fixed": "#006d41",
+                        "surface-bright": "#393939",
+                        "on-primary-container": "#000000",
+                        "primary-container": "#d4d4d4",
+                        "secondary-fixed-dim": "#adabaa",
+                        "surface-dim": "#131313",
+                        "surface-container-highest": "#353535",
+                        "on-primary-fixed-variant": "#e2e2e2",
+                        "surface-variant": "#353535",
+                        "on-secondary-fixed": "#1c1b1b",
+                        "on-tertiary": "#002110",
+                        "on-surface": "#e2e2e2",
+                        "primary": "#ffffff",
+                        "primary-fixed-dim": "#454747",
+                        "inverse-surface": "#e2e2e2",
+                        "surface-container": "#1f1f1f",
+                        "surface": "#131313",
+                        "inverse-primary": "#5d5f5f",
+                        "on-tertiary-fixed-variant": "#6bfdaf",
+                        "on-primary": "#1a1c1c",
+                        "tertiary-container": "#00a666",
+                        "on-secondary-container": "#e5e2e1",
+                        "on-tertiary-fixed": "#ffffff",
+                        "error": "#ffb4ab",
+                        "surface-container-low": "#1b1b1b",
+                        "on-surface-variant": "#c6c6c6",
+                        "on-tertiary-container": "#000000",
+                        "on-background": "#e2e2e2",
+                        "outline-variant": "#474747",
+                        "surface-container-lowest": "#0e0e0e",
+                        "background": "#131313",
+                        "error-container": "#93000a",
+                        "outline": "#919191",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed": "#5d5f5f",
+                        "on-primary-fixed": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: transparent;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .glass-panel {
+            background: rgba(19, 19, 19, 0.85);
+            backdrop-filter: blur(20px);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-transparent text-on-surface">
+<!-- Floating Widget Container -->
+<div class="relative w-[320px] h-[380px] bg-surface rounded-2xl overflow-hidden shadow-[0_40px_60px_rgba(0,0,0,0.5)] border border-outline-variant/20 flex flex-col">
+<!-- TopAppBar Shared Component -->
+<header class="bg-[#131313]/80 backdrop-blur-xl text-white font-['Inter'] tracking-tight flex items-center justify-between px-4 h-12 w-full rounded-t-2xl z-10">
+<div class="text-sm font-bold tracking-[0.05em] text-white uppercase">BREAK</div>
+<div class="flex items-center gap-3">
+<button class="text-[#c6c6c6] hover:text-white transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+<button class="text-[#c6c6c6] hover:text-white transition-colors active:scale-95 duration-200">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center relative px-6">
+<!-- Resend-style Badge -->
+<div class="mb-6">
+<span class="bg-surface-container-highest border border-outline-variant/20 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase" style="color: #f4a291;">
+                BREAK
+            </span>
+</div>
+<!-- Timer Display -->
+<div class="text-white text-7xl font-extrabold tracking-tighter mb-8 font-headline">
+            05:00
+        </div>
+<!-- Playback Controls -->
+<div class="flex items-center gap-8 mb-4">
+<button class="text-on-surface-variant hover:text-white transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[20px]">refresh</span>
+</button>
+<button class="w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+</button>
+<button class="text-on-surface-variant hover:text-white transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">skip_next</span>
+</button>
+</div>
+<!-- Contextual Data Visualization (Subtle Texture) -->
+<div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex justify-center -z-10 opacity-20 pointer-events-none">
+<div class="w-48 h-48 rounded-full bg-tertiary/10 blur-[80px]"></div>
+</div>
+</main>
+<!-- Footer Area with Progress Bar -->
+<footer class="flex flex-col w-full">
+<!-- Spotify-style Progress Bar -->
+<div class="w-full px-4 mb-2">
+<div class="h-[2px] w-full bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary w-0 shadow-[0_0_8px_rgba(255,255,255,0.4)]"></div>
+</div>
+<div class="flex justify-between mt-1.5">
+<span class="text-[9px] text-on-surface-variant font-medium tracking-wider">00:00</span>
+<span class="text-[9px] text-on-surface-variant font-medium tracking-wider">05:00</span>
+</div>
+</div>
+<!-- BottomNavBar Shared Component -->
+<nav class="bg-[#131313]/80 backdrop-blur-xl border-t border-[#474747]/20 flex justify-around items-center w-full h-14 rounded-b-2xl">
+<!-- Focus Tab (Inactive) -->
+<button class="flex flex-col items-center justify-center text-[#c6c6c6] py-1 px-4 hover:bg-[#2a2a2a] transition-all active:scale-95">
+<span class="material-symbols-outlined text-[20px]">timer</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.05em] mt-0.5">Focus</span>
+</button>
+<!-- Break Tab (Active) -->
+<button class="flex flex-col items-center justify-center bg-[#353535]/50 rounded-xl py-1 px-4 active:scale-95 transition-all" style="color: #f4a291;">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">coffee</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.05em] mt-0.5">Break</span>
+</button>
+</nav>
+</footer>
+</div>
+<!-- Decorative Screen Texture (Ambient Glow) -->
+<div class="fixed inset-0 -z-20 pointer-events-none overflow-hidden">
+<div class="absolute -top-1/4 -right-1/4 w-[800px] h-[800px] bg-tertiary/5 rounded-full blur-[160px]"></div>
+<div class="absolute -bottom-1/4 -left-1/4 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[160px]"></div>
+</div>
+</body></html>
