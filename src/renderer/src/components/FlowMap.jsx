@@ -5,24 +5,40 @@ import { useState, useRef, useEffect } from 'react'
 const CANVAS_W = 600
 const CANVAS_H = 700
 
-// Node positions in pixels within the canvas
-const NODES = [
-  { x: 300, y: 80  },  // Block 1 — center
-  { x: 190, y: 200 },  // Break 1 — left
-  { x: 300, y: 320 },  // Block 2 — center
+// Initial node positions (2 nodes: Block 1 + Break 1)
+const INITIAL_NODES = [
+  { x: 300, y: 80  },
+  { x: 190, y: 200 },
 ]
 
-// Bezier path segments
-const SEGMENTS = [
-  `M ${NODES[0].x},${NODES[0].y} C 380,120 200,160 ${NODES[1].x},${NODES[1].y}`,
-  `M ${NODES[1].x},${NODES[1].y} C 160,260 360,290 ${NODES[2].x},${NODES[2].y}`,
+const INITIAL_SEGMENTS = [
+  `M 300,80 C 380,120 200,160 190,200`, // center→left: bulges right
 ]
 
 const INITIAL_BLOCKS = [
   { id: 1, type: 'focus', status: 'active',   name: 'Block 1', tasks: [] },
   { id: 2, type: 'break', status: 'upcoming', name: 'Break 1', tasks: [] },
-  { id: 3, type: 'focus', status: 'upcoming', name: 'Block 2', tasks: [] },
 ]
+
+// ── Helpers for dynamic node generation ──────────────────────────────────────
+
+// Alternates x: even index = center (300), odd = left (190)
+// y increments by 120 per node
+function getNextNodePos(nodes) {
+  const idx = nodes.length
+  return { x: idx % 2 === 0 ? 300 : 190, y: 80 + idx * 120 }
+}
+
+// Generates an S-curve bezier segment between two nodes
+function makeSegment(from, to) {
+  if (from.x > 240) {
+    // center → left: bulges RIGHT
+    return `M ${from.x},${from.y} C 380,${from.y + 40} 200,${to.y - 40} ${to.x},${to.y}`
+  } else {
+    // left → center: bulges LEFT (true mirror of above)
+    return `M ${from.x},${from.y} C 110,${from.y + 40} 290,${to.y - 40} ${to.x},${to.y}`
+  }
+}
 
 // Visible area height: total 380 minus header 48px
 const VISIBLE_H = 332
@@ -33,12 +49,33 @@ const INITIAL_PAN = { x: -(CANVAS_W - VISIBLE_W) / 2, y: 0 }
 
 // ── FlowMap ───────────────────────────────────────────────────────────────────
 function FlowMap({ onClose }) {
-  const [blocks, setBlocks] = useState(INITIAL_BLOCKS)
+  const [blocks,   setBlocks]   = useState(INITIAL_BLOCKS)
+  const [nodes,    setNodes]     = useState(INITIAL_NODES)
+  const [segments, setSegments] = useState(INITIAL_SEGMENTS)
   const [editingId, setEditingId] = useState(null)
   const [pan, setPan] = useState(INITIAL_PAN)
   const dragRef = useRef(null)
 
   const activeIndex = blocks.findIndex(b => b.status === 'active')
+
+  // Dynamic canvas height: last node y + 200px padding
+  const canvasH = Math.max(CANVAS_H, nodes[nodes.length - 1].y + 200)
+
+  // Next "+" node position
+  const nextPos = getNextNodePos(nodes)
+
+  function addNode(type) {
+    const typeCount  = blocks.filter(b => b.type === type).length + 1
+    const nextName   = type === 'focus' ? `Block ${typeCount}` : `Break ${typeCount}`
+    const newNode    = nextPos
+    const newSegment = makeSegment(nodes[nodes.length - 1], newNode)
+    const newId      = Date.now()
+
+    setBlocks(prev   => [...prev, { id: newId, type, status: 'upcoming', name: nextName, tasks: [] }])
+    setNodes(prev    => [...prev, newNode])
+    setSegments(prev => [...prev, newSegment])
+    setEditingId(newId)
+  }
 
   function onWheel(e) {
     e.preventDefault()
@@ -109,7 +146,7 @@ function FlowMap({ onClose }) {
           className="absolute"
           style={{
             width: CANVAS_W,
-            height: CANVAS_H,
+            height: canvasH,
             transform: `translate(${pan.x}px, ${pan.y}px)`,
             willChange: 'transform',
           }}
@@ -126,10 +163,10 @@ function FlowMap({ onClose }) {
           {/* SVG paths */}
           <svg
             className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox={`0 0 ${CANVAS_W} ${CANVAS_H}`}
+            viewBox={`0 0 ${CANVAS_W} ${canvasH}`}
             preserveAspectRatio="none"
           >
-            {SEGMENTS.map((d, i) => {
+            {segments.map((d, i) => {
               const isPassed = activeIndex > i
               return (
                 <path
@@ -144,6 +181,16 @@ function FlowMap({ onClose }) {
                 />
               )
             })}
+
+            {/* Ghost segment from last node → PlusNode */}
+            <path
+              d={makeSegment(nodes[nodes.length - 1], nextPos)}
+              fill="none"
+              stroke="#474747"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              opacity={0.4}
+            />
           </svg>
 
           {/* Nodes */}
@@ -154,15 +201,22 @@ function FlowMap({ onClose }) {
               <Node
                 key={block.id}
                 block={block}
-                x={NODES[i].x}
-                y={NODES[i].y}
+                x={nodes[i].x}
+                y={nodes[i].y}
                 num={num}
                 isPast={isPast}
-                flipped={NODES[i].y < 150}
+                flipped={nodes[i].y < 150}
                 onEdit={() => setEditingId(block.id)}
               />
             )
           })}
+
+          {/* Plus node — add next block */}
+          <PlusNode
+            x={nextPos.x}
+            y={nextPos.y}
+            onAdd={addNode}
+          />
         </div>
 
       </main>
@@ -344,6 +398,101 @@ function Node({ block, x, y, num, isPast, flipped, onEdit }) {
         )}
       </div>
 
+    </div>
+  )
+}
+
+// ── PlusNode ──────────────────────────────────────────────────────────────────
+function PlusNode({ x, y, onAdd }) {
+  const [hovered, setHovered] = useState(false)
+  const leaveTimer = useRef(null)
+  const size = 22
+  const half = size / 2
+
+  function handleEnter() {
+    clearTimeout(leaveTimer.current)
+    setHovered(true)
+  }
+
+  function handleLeave() {
+    leaveTimer.current = setTimeout(() => setHovered(false), 120)
+  }
+
+  return (
+    <div
+      className="absolute"
+      style={{ left: x, top: y }}
+      onPointerDown={e => e.stopPropagation()}
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
+      {/* Circle */}
+      <div
+        className="absolute flex items-center justify-center rounded-full transition-all duration-200 border border-dashed border-outline-variant/25"
+        style={{
+          width: size,
+          height: size,
+          marginLeft: -half,
+          marginTop: -half,
+          background: hovered ? 'rgba(255,255,255,0.04)' : 'transparent',
+          transform: hovered ? 'scale(1.1)' : 'scale(1)',
+        }}
+      >
+        <span className={`material-symbols-outlined text-[13px] transition-colors ${hovered ? 'text-on-surface-variant/70' : 'text-on-surface-variant/25'}`}>
+          add
+        </span>
+      </div>
+
+      {/* Static label */}
+      <p
+        className={`absolute whitespace-nowrap text-[9px] font-bold uppercase transition-colors ${hovered ? 'text-on-surface-variant/50' : 'text-on-surface-variant/20'}`}
+        style={{ left: half + 8, transform: 'translateY(-50%)' }}
+      >
+        Add block
+      </p>
+
+      {/* Hover card — same style as Node, contains type picker */}
+      <div
+        className="absolute z-30 transition-all duration-200 origin-bottom"
+        style={{
+          left: half + 6,
+          bottom: half + 6,
+          transform: hovered ? 'scale(1) translateY(0)' : 'scale(0.7) translateY(6px)',
+          opacity: hovered ? 1 : 0,
+        }}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+      >
+        <div className="px-2.5 py-2 rounded-lg border text-left border-outline-variant/20 bg-surface-container-high/90 backdrop-blur-sm"
+          style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}
+        >
+          <p className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40 mb-2">
+            Add
+          </p>
+
+          <button
+            onClick={() => onAdd('focus')}
+            className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg hover:bg-tertiary/10 transition-colors group"
+          >
+            <span className="material-symbols-outlined text-[14px] text-tertiary/50 group-hover:text-tertiary transition-colors">timer</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/50 group-hover:text-tertiary transition-colors whitespace-nowrap">Focus Block</span>
+          </button>
+
+          <button
+            onClick={() => onAdd('break')}
+            className="flex items-center gap-2 w-full px-2 py-1.5 rounded-lg hover:bg-break-accent/10 transition-colors group"
+          >
+            <span className="material-symbols-outlined text-[14px] text-break-accent/50 group-hover:text-break-accent transition-colors">coffee</span>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant/50 group-hover:text-break-accent transition-colors whitespace-nowrap">Break</span>
+          </button>
+        </div>
+
+        {/* Arrow */}
+        <div
+          className="w-2 h-2 rotate-45 border-b border-r ml-3 border-outline-variant/20 bg-surface-container-high/90"
+          style={{ marginTop: -4 }}
+        />
+      </div>
     </div>
   )
 }
