@@ -557,7 +557,7 @@ function NodeEditPanel({ block, onSave, onClose }) {
       {/* Footer — Save */}
       <div className="px-4 py-3 border-t border-white/5 shrink-0">
         <button
-          onClick={() => onSave(block.id, { name: name.trim() || block.name, tasks })}
+          onClick={() => onSave(block.id, { name: name.trim() || block.name, tasks: tasks.filter(t => t.text.trim() !== '') })}
           className={`
             w-full py-2 rounded-xl text-[11px] font-bold uppercase tracking-widest
             transition-all active:scale-95
