@@ -59,6 +59,33 @@ body {
   background: rgba(241, 154, 142, 0.3);
 }
 
+/* Thin custom scrollbar */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 999px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Task check-off pop animation */
+@keyframes task-pop-away {
+  0%   { transform: scale(1);    opacity: 1; }
+  30%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(0.75); opacity: 0; }
+}
+
+.task-pop-away {
+  animation: task-pop-away 0.32s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
+}
+
 /* Node pulse ring — loops on active node in FlowMap */
 @keyframes node-pulse {
   0%   { transform: scale(1);   opacity: 0.7; }
