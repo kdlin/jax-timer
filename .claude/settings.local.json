@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(pandoc --version)",
+      "Bash(python -c \"import docx; print\\('ok'\\)\")",
+      "Bash(python:*)"
+    ]
+  }
+}
